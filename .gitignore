@@ -58,6 +58,7 @@ cover/
 
 # Django stuff:
 *.log
+!registros/software_fj.log
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
@@ -218,3 +219,19 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+# Archivos temporales de Python
+__pycache__/
+*.py[cod]
+
+# Entornos virtuales
+.venv/
+venv/
+
+# Archivos privados
+.env
+
+# Configuracion personal de Visual Studio Code
+.vscode/
+
+# Archivos temporales
+tempCodeRunnerFile.py
