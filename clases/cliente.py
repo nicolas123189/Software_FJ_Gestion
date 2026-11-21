@@ -1,71 +1,76 @@
-
 import re
 from clases.entidad import Entidad
+from clases.excepciones import DatosInvalidosError
+from clases.logs import registrar_evento, registrar_error
 
 
 class Cliente(Entidad):
+    """Representa a una persona que utiliza los servicios de Software FJ."""
 
     def __init__(self, identificacion, nombre, correo, telefono):
+        try:
+            identificacion = str(identificacion).strip()
+            nombre = str(nombre).strip()
+            correo = str(correo).strip().lower()
+            telefono = str(telefono).strip()
 
-        # Validar identificacion
-        if not str(identificacion).strip():
-            raise ValueError("La identificacion es obligatoria.")
+            if not identificacion:
+                raise DatosInvalidosError("La identificacion es obligatoria.")
 
-        # Validar nombre
-        if not nombre or not nombre.strip():
-            raise ValueError("El nombre del cliente es obligatorio.")
+            if len(nombre) < 3:
+                raise DatosInvalidosError(
+                    "El nombre debe tener al menos 3 caracteres."
+                )
 
-        if len(nombre.strip()) < 3:
-            raise ValueError("El nombre debe tener minimo 3 caracteres.")
+            if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", correo):
+                raise DatosInvalidosError(
+                    "El correo electronico no es valido."
+                )
 
-        # Validar correo electronico
-        patron_correo = r'^[\w.+-]+@[\w-]+\.[\w.-]+$'
+            if not telefono.isdigit() or not 7 <= len(telefono) <= 15:
+                raise DatosInvalidosError(
+                    "El telefono debe tener entre 7 y 15 digitos."
+                )
 
-        if not re.match(patron_correo, correo):
-            raise ValueError("El correo electronico no es valido.")
+            super().__init__(identificacion)
 
-        # Validar telefono
-        if not str(telefono).isdigit() or not (7 <= len(str(telefono)) <= 15):
-            raise ValueError("El telefono debe tener entre 7 y 15 digitos.")
+            self.__nombre = nombre
+            self.__correo = correo
+            self.__telefono = telefono
 
-        # Inicializar la clase padre
-        super().__init__(str(identificacion).strip())
+            registrar_evento(f"Cliente creado: {identificacion}")
 
-        # Atributos encapsulados
-        self.__nombre = nombre.strip()
-        self.__correo = correo.strip().lower()
-        self.__telefono = str(telefono)
+        except DatosInvalidosError:
+            registrar_error("No fue posible crear el cliente.")
+            raise
 
-    # Consultar nombre
     @property
     def nombre(self):
         return self.__nombre
 
-    # Consultar correo
     @property
     def correo(self):
         return self.__correo
 
-    # Consultar telefono
     @property
     def telefono(self):
         return self.__telefono
 
-    # Actualizar correo con validacion
     def actualizar_correo(self, nuevo_correo):
+        nuevo_correo = str(nuevo_correo).strip().lower()
 
-        patron_correo = r'^[\w.+-]+@[\w-]+\.[\w.-]+$'
+        if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", nuevo_correo):
+            raise DatosInvalidosError("El nuevo correo no es valido.")
 
-        if not re.match(patron_correo, nuevo_correo):
-            raise ValueError("El nuevo correo no es valido.")
+        self.__correo = nuevo_correo
 
-        self.__correo = nuevo_correo.strip().lower()
+        registrar_evento(
+            f"Correo actualizado para cliente {self.identificador}"
+        )
 
-    # Mostrar informacion del cliente
     def mostrar_informacion(self):
-
         return (
-            f"Identificacion: {self._identificador}\n"
+            f"Identificacion: {self.identificador}\n"
             f"Nombre: {self.__nombre}\n"
             f"Correo: {self.__correo}\n"
             f"Telefono: {self.__telefono}"
